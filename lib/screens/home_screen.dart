@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
+import '../models/document.dart';
+import '../services/hive_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -9,12 +12,31 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _controller = TextEditingController();
-  String extractedText = "";
+  List<Document> documents = [];
 
-  void handleTextSubmit() {
+  void handleTextSubmit() async {
+    final text = _controller.text;
+
+    if (text.isEmpty) return;
+
+    final doc = Document(
+      id: const Uuid().v4(),
+      content: text,
+      createdAt: DateTime.now(),
+    );
+
+    await HiveService.saveDocument(doc);
+
     setState(() {
-      extractedText = _controller.text;
+      documents = HiveService.getDocuments();
+      _controller.clear();
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    documents = HiveService.getDocuments();
   }
 
   @override
@@ -42,12 +64,23 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 20),
             Expanded(
-              child: SingleChildScrollView(
-                child: Text(
-                  extractedText.isEmpty
-                      ? "Your extracted text will appear here..."
-                      : extractedText,
-                ),
+              child: documents.isEmpty
+                  ? const Center(child: Text("No documents yet"))
+                  : ListView.builder(
+                itemCount: documents.length,
+                itemBuilder: (context, index) {
+                  final doc = documents[index];
+                  return Card(
+                    child: ListTile(
+                      title: Text(
+                        doc.content.length > 50
+                            ? "${doc.content.substring(0, 50)}..."
+                            : doc.content,
+                      ),
+                      subtitle: Text(doc.createdAt.toString()),
+                    ),
+                  );
+                },
               ),
             )
           ],
