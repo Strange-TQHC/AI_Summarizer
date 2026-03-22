@@ -1,32 +1,49 @@
-import 'package:hive_flutter/hive_flutter.dart';
-import '../models/document.dart';
+import 'package:hive/hive.dart';
+import '../models/chat.dart';
+import '../models/message.dart';
 
 class HiveService {
-  static const String boxName = "documentsBox";
+  static const String chatBoxName = "chatBox";
 
   static Future<void> init() async {
-    await Hive.initFlutter();
-    await Hive.openBox(boxName);
+    await Hive.openBox(chatBoxName);
   }
 
-  static Future<void> saveDocument(Document doc) async {
-    final box = Hive.box(boxName);
-    await box.put(doc.id, {
-      "content": doc.content,
-      "createdAt": doc.createdAt.toIso8601String(),
+  static Future<void> saveChat(Chat chat) async {
+    final box = Hive.box(chatBoxName);
+
+    await box.put(chat.id, {
+      "title": chat.title,
+      "document": chat.documentContent,
+      "messages": chat.messages.map((m) => {
+        "text": m.text,
+        "isUser": m.isUser,
+      }).toList(),
     });
   }
 
-  static List<Document> getDocuments() {
-    final box = Hive.box(boxName);
+  static List<Chat> getChats() {
+    final box = Hive.box(chatBoxName);
 
     return box.keys.map((key) {
       final data = box.get(key);
-      return Document(
+
+      return Chat(
         id: key,
-        content: data["content"],
-        createdAt: DateTime.parse(data["createdAt"]),
+        title: data["title"],
+        documentContent: data["document"],
+        messages: (data["messages"] as List)
+            .map((m) => Message(
+          text: m["text"],
+          isUser: m["isUser"],
+        ))
+            .toList(),
       );
     }).toList();
+  }
+
+  static Future<void> deleteChat(String id) async {
+    final box = Hive.box(chatBoxName);
+    await box.delete(id);
   }
 }
