@@ -18,6 +18,7 @@ class HiveService {
       "messages": chat.messages.map((m) => {
         "text": m.text,
         "isUser": m.isUser,
+        "time": m.time.toIso8601String(),
       }).toList(),
     });
   }
@@ -36,6 +37,9 @@ class HiveService {
             .map((m) => Message(
           text: m["text"],
           isUser: m["isUser"],
+          time: m["time"] != null
+              ? DateTime.parse(m["time"])
+              : DateTime.now(),
         ))
             .toList(),
       );

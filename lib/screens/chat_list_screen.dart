@@ -38,6 +38,16 @@ class _ChatListScreenState extends State<ChatListScreen> {
                 ),
               );
             },
+            trailing: IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: () async {
+                await HiveService.deleteChat(chat.id);
+
+                setState(() {
+                  chats = HiveService.getChats();
+                });
+              },
+            ),
           );
         },
       ),

@@ -29,7 +29,7 @@ class _ChatScreenState extends State<ChatScreen> {
     super.initState();
 
     if (widget.chat != null) {
-      messages = widget.chat!.messages;
+      messages = List.from(widget.chat!.messages);
       documentContent = widget.chat!.documentContent;
       currentChatId = widget.chat!.id;
     }
@@ -40,7 +40,11 @@ class _ChatScreenState extends State<ChatScreen> {
     if (text.isEmpty) return;
 
     setState(() {
-      messages.add(Message(text: text, isUser: true));
+      messages.add(Message(
+        text: text,
+        isUser: true,
+        time: DateTime.now(),
+      ));
       isLoading = true;
       _controller.clear();
     });
@@ -58,7 +62,11 @@ $text
     final response = await AIService.summarize(prompt);
 
     setState(() {
-      messages.add(Message(text: response, isUser: false));
+      messages.add(Message(
+        text: response,
+        isUser: false,
+        time: DateTime.now(),
+      ));
       isLoading = false;
     });
 
@@ -96,12 +104,25 @@ $text
           color: msg.isUser ? Colors.indigo : Colors.grey.shade200,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Text(
-          msg.text,
-          style: TextStyle(
-            fontSize: 14,
-            color: msg.isUser ? Colors.white : Colors.black87,
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              msg.text,
+              style: TextStyle(
+                fontSize: 14,
+                color: msg.isUser ? Colors.white : Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              "${msg.time.hour}:${msg.time.minute.toString().padLeft(2, '0')}",
+              style: const TextStyle(
+                fontSize: 10,
+                color: Colors.grey,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -176,8 +197,14 @@ $text
 
           if (isLoading)
             const Padding(
-              padding: EdgeInsets.all(8),
-              child: CircularProgressIndicator(),
+              padding: EdgeInsets.all(10),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "AI is typing...",
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ),
             ),
 
           Container(
@@ -200,6 +227,8 @@ $text
                 Expanded(
                   child: TextField(
                     controller: _controller,
+                    autofocus: true,
+                    enabled: !isLoading,
                     decoration: InputDecoration(
                       hintText: "Ask anything...",
                       contentPadding: const EdgeInsets.symmetric(horizontal: 12),

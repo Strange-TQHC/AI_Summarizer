@@ -20,7 +20,7 @@ class AIService {
         "messages": [
           {
             "role": "user",
-            "content": "Summarize this in 5 bullet points:\n$trimmed"
+            "content": "Answer briefly (max 5 lines):\n$trimmed"
           }
         ]
       }),
