@@ -7,6 +7,7 @@ plugins {
 
 android {
     namespace = "com.example.ai_summarizer"
+    // namespace = "com.example.pdf_text_extract"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
 
