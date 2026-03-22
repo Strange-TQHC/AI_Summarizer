@@ -8,7 +8,6 @@ import 'chat_list_screen.dart';
 
 class ChatScreen extends StatefulWidget {
   final Chat? chat;
-
   const ChatScreen({super.key, this.chat});
 
   @override
@@ -17,6 +16,7 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   List<Message> messages = [];
   bool isLoading = false;
@@ -62,6 +62,14 @@ $text
       isLoading = false;
     });
 
+    Future.delayed(const Duration(milliseconds: 100), () {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    });
+
     final chat = Chat(
       id: currentChatId ?? DateTime.now().toString(),
       title: messages.first.text.length > 30
@@ -81,16 +89,18 @@ $text
       alignment:
       msg.isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 5),
+        constraints: const BoxConstraints(maxWidth: 280),
+        margin: const EdgeInsets.symmetric(vertical: 6),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: msg.isUser ? Colors.indigo : Colors.grey.shade300,
-          borderRadius: BorderRadius.circular(10),
+          color: msg.isUser ? Colors.indigo : Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(16),
         ),
         child: Text(
           msg.text,
           style: TextStyle(
-            color: msg.isUser ? Colors.white : Colors.black,
+            fontSize: 14,
+            color: msg.isUser ? Colors.white : Colors.black87,
           ),
         ),
       ),
@@ -115,8 +125,20 @@ $text
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Chat"),
+        title: const Text("AI Chat"),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            tooltip: "New Chat",
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const ChatScreen(),
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.history),
             onPressed: () {
@@ -132,11 +154,23 @@ $text
       ),
       body: Column(
         children: [
+          if (messages.isEmpty)
+            const Expanded(
+              child: Center(
+                child: Text(
+                  "Start a conversation\nor upload a PDF",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ),
+            )
+          else
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(12),
               itemCount: messages.length,
               itemBuilder: (_, i) => buildMessage(messages[i]),
+              controller: _scrollController,
             ),
           ),
 
@@ -147,25 +181,37 @@ $text
             ),
 
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 4,
+                )
+              ],
+            ),
             child: Row(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.add),
+                  icon: const Icon(Icons.add_circle_outline),
                   onPressed: handlePdfUpload,
                 ),
                 Expanded(
                   child: TextField(
                     controller: _controller,
-                    decoration: const InputDecoration(
-                      hintText: "Ask something...",
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      hintText: "Ask anything...",
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
                     ),
                   ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.send),
-                  onPressed: sendMessage,
+                  onPressed: isLoading ? null : sendMessage,
                 ),
               ],
             ),
