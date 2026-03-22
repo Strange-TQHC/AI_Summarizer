@@ -5,7 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 import '../models/document.dart';
 import '../services/hive_service.dart';
-import 'document_detail_screen.dart';
+import 'chat_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -159,7 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => DocumentDetailScreen(document: doc),
+                            builder: (_) => ChatScreen(document: doc),
                           ),
                         );
                       },
